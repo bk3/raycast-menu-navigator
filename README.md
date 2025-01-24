@@ -1,2 +1,3 @@
-# raycast-menu-item-shortcuts
-Raycast extension for showing focused application's menu items.
+# keycuts
+
+Show's application keyboard shortcuts

@@ -13,12 +13,12 @@ type ExtensionPreferences = {}
 declare type Preferences = ExtensionPreferences
 
 declare namespace Preferences {
-  /** Preferences accessible in the `show-shortcuts` command */
-  export type ShowShortcuts = ExtensionPreferences & {}
+  /** Preferences accessible in the `show-commands` command */
+  export type ShowCommands = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
-  /** Arguments passed to the `show-shortcuts` command */
-  export type ShowShortcuts = {}
+  /** Arguments passed to the `show-commands` command */
+  export type ShowCommands = {}
 }
 

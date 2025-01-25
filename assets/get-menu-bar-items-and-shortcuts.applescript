@@ -12,7 +12,7 @@ on convertRecordsToString(recordsList)
         set shortcutKey to shortcutKey of recordItem
         
         -- Concatenate values into a string
-        set recordString to "KCSCS:KCMN:" & menuName & ":KCSN:" & shortcutName & ":KCSM:" & shortcutModifiers & ":KCSK:" & shortcutKey
+        set recordString to "MNS:MNMN:" & menuName & ":MNSN:" & shortcutName & ":MNSM:" & shortcutModifiers & ":MNSK:" & shortcutKey
         
         -- Append to result string with a separator
         set resultString to resultString & recordString
@@ -20,30 +20,12 @@ on convertRecordsToString(recordsList)
     return resultString
 end convertRecordsToString
 
-
--- Function to map glyph values to key names
-on glyphToKeyName(glyph)
-	if glyph is 122 then
-		return "Up Arrow"
-	else if glyph is 123 then
-		return "Down Arrow"
-	else if glyph is 124 then
-		return "Left Arrow"
-	else if glyph is 125 then
-		return "Right Arrow"
-	else
-		return "Unknown Key"
-	end if
-end glyphToKeyName
-
 on run
 	set allShortcuts to {}
 	
 	tell application "System Events"
 		set frontApp to first application process whose frontmost is true
 		set appName to name of frontApp
-		
-		log "Checking app: " & appName
 		
 		try
 			set menuBar to menu bar 1 of frontApp
@@ -82,22 +64,18 @@ on run
 										set end of allShortcuts to menuItemInfo
 									end if
 								on error errorMessage
-									log "Error processing shortcuts: " & menuItemError
 								end try
 								
 							end if
 						on error menuItemError
-							log "Error processing menu item: " & menuItemError
 						end try
 					end repeat
 					
 				on error menuError
-					log "Error processing menu: " & menuError
 				end try
 			end repeat
 			
 		on error err
-			log "Error accessing menu bar: " & err
 		end try
 	end tell
 

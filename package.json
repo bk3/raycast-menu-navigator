@@ -1,17 +1,17 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "keycuts",
-  "title": "keycuts",
-  "description": "Show's application keyboard shortcuts",
-  "icon": "extension-icon.png",
+  "name": "menu-navigator",
+  "title": "Menu Navigator",
+  "description": "Quick access to application menu commands and shortcuts",
+  "icon": "menu-navigator-icon.png",
   "author": "bkimbriel",
   "license": "MIT",
   "commands": [
     {
-      "name": "show-shortcuts",
-      "title": "Show shortcuts",
-      "subtitle": "Show's all menu item shortcuts available",
-      "description": "Shows a list of application shortcuts and allows you to run them",
+      "name": "show-commands",
+      "title": "Show Commands",
+      "subtitle": "Menu Navigator",
+      "description": "Browse and execute menu commands from the current application",
       "mode": "view"
     }
   ],

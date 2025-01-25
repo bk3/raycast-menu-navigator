@@ -80,3 +80,4 @@ export function parseAppleScriptResponse(app: Application, response: string) {
     timestamp
   }
 }
+

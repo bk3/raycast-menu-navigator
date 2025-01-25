@@ -11,7 +11,7 @@
       "name": "show-commands",
       "title": "Show Commands",
       "subtitle": "Menu Navigator",
-      "description": "Browse and execute menu commands from the current application",
+      "description": "Browse and execute menu bar item commands from the current application",
       "mode": "view"
     }
   ],

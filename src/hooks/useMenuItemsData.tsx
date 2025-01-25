@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { MenusConfig } from "../types";
 import { Application, getFrontmostApplication, showHUD } from "@raycast/api";
-import { loadInitialData } from "../actions";
+import { MenusConfig } from "../types";
+import { loadInitialData } from "../data";
 
 
 export function useMenuItemsData() {
@@ -36,6 +36,7 @@ export function useMenuItemsData() {
   return {
     loading,
     app,
-    data
+    data,
+    loaded: data && data?.menus?.length && app?.name && !loading,
   }
 }

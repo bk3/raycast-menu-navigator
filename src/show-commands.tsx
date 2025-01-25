@@ -24,7 +24,7 @@ export default function Command() {
   return (
     <List
       isLoading={loading}
-      navigationTitle={'Menu Navigator'}
+      navigationTitle={!app?.name ? 'Menu Navigator' : `Menu Navigator: ${app?.name}`}
       searchBarAccessory={(
         <SectionDropdown
           sections={options}
@@ -62,7 +62,7 @@ function ListItems({ app, data }: ListItemsProps) {
       {i.items?.map(item => (
         <List.Item
           title={item.shortcut}
-          accessories={[{ tag: `${item.modifier} ${item.key}` }]}
+          accessories={item.key !== 'NIL' ? [{ tag: `${item.modifier} ${item.key}` }] : undefined}
           key={`${item.menu}-${item.shortcut}`}
           actions={
             <ListItemActions app={app} item={item} />
@@ -168,13 +168,13 @@ function useMenuItemFilters(data?: MenusConfig) {
       case 'shortcut-commands':
         menus = data.menus.map(menuGroup => ({
           ...menuGroup,
-          items: menuGroup.items.filter(item => item.shortcut?.length)
+          items: menuGroup.items.filter(item => item.shortcut?.length && item.key !== 'NIL')
         })).filter(menuGroup => menuGroup.items.length > 0);
         break;
       case 'no-shortcut-commands':
         menus = data.menus.map(menuGroup => ({
           ...menuGroup,
-          items: menuGroup.items.filter(item => !item.shortcut?.length)
+          items: menuGroup.items.filter(item => !item.shortcut?.length || item.key === 'NIL')
         })).filter(menuGroup => menuGroup.items.length > 0);
         break;
       default:

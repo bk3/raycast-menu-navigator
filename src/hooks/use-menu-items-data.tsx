@@ -4,26 +4,29 @@ import { MenusConfig } from "../types";
 import { loadInitialData, refreshData } from "../data";
 
 export function useMenuItemsData() {
-  const [loading, setLoading] = useState(true)
-  const [data, setData] = useState<MenusConfig>()
-  const [app, setApp] = useState<Application>()
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<MenusConfig>();
+  const [app, setApp] = useState<Application>();
 
-  async function loadingHandler(fn: (App: Application) => Promise<MenusConfig | undefined>) {
+  async function loadingHandler(
+    fn: (App: Application) => Promise<MenusConfig | undefined>,
+  ) {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // get app
       const appResponse = await getFrontmostApplication();
-      if (!appResponse.name) throw new Error('Focused application window not found')
-      setApp(appResponse)
+      if (!appResponse.name)
+        throw new Error("Focused application window not found");
+      setApp(appResponse);
 
       // load data
-      const initialData = await fn(appResponse)
-      setData(initialData)
+      const initialData = await fn(appResponse);
+      setData(initialData);
     } catch (e) {
-      await showHUD(String(e))
+      await showHUD(String(e));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -37,5 +40,5 @@ export function useMenuItemsData() {
     data,
     loaded: data && data?.menus?.length && app?.name && !loading,
     refreshMenuItemsData: () => loadingHandler(refreshData),
-  }
+  };
 }

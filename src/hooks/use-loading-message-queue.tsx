@@ -2,15 +2,15 @@ import { Application } from "@raycast/api";
 import { useState, useEffect } from "react";
 
 export function useLoadingMessageQueue(loading: boolean, app?: Application) {
-  const [loadingMessage, setLoadingMessage] = useState('');
-  const [loadingState, setLoadingState] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [loadingState, setLoadingState] = useState("");
 
   const messages = [
     `Processing`,
     `Please wait`,
     `Getting close`,
     `Almost there`,
-  ]
+  ];
 
   // Set initial loading message when app.name becomes available
   useEffect(() => {
@@ -18,8 +18,8 @@ export function useLoadingMessageQueue(loading: boolean, app?: Application) {
     setLoadingMessage(`Loading ${app.name} menu items...`);
 
     return () => {
-      setLoadingMessage('')
-    }
+      setLoadingMessage("");
+    };
   }, [app?.name]);
 
   // Handle loading message progression
@@ -41,4 +41,3 @@ export function useLoadingMessageQueue(loading: boolean, app?: Application) {
 
   return { loadingMessage, loadingState };
 }
-

@@ -4,7 +4,11 @@ import { runAppleScript } from "@raycast/utils";
 /*
  * Run specific shortcut from command
  */
-export async function runShortcut(appName: Application['name'], menu: string, action: string) {
+export async function runShortcut(
+  appName: Application["name"],
+  menu: string,
+  action: string,
+) {
   try {
     const response = await runAppleScript(`
       set appName to "${appName}"
@@ -26,9 +30,9 @@ export async function runShortcut(appName: Application['name'], menu: string, ac
               end try
           end tell
       end tell
-    `)
+    `);
     return response;
   } catch (e) {
-    throw new Error('Could not run shortcut')
+    throw new Error("Could not run shortcut");
   }
 }

@@ -19,6 +19,6 @@ export interface MenusConfig {
 }
 
 export interface SectionTypes {
-  id: string,
+  id: string;
   value: string;
 }

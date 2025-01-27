@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Application, getFrontmostApplication, showHUD } from "@raycast/api";
 import { MenusConfig } from "../types";
-import { loadInitialData } from "../data";
+import { loadInitialData, refreshData } from "../data";
 
 
 export function useMenuItemsData() {
@@ -9,7 +9,7 @@ export function useMenuItemsData() {
   const [data, setData] = useState<MenusConfig>()
   const [app, setApp] = useState<Application>()
 
-  async function loadData() {
+  async function loadingHandler(fn: (App: Application) => Promise<MenusConfig | undefined>) {
     try {
       setLoading(true)
 
@@ -19,18 +19,17 @@ export function useMenuItemsData() {
       setApp(appResponse)
 
       // load data
-      const initialData = await loadInitialData(appResponse)
+      const initialData = await fn(appResponse)
       setData(initialData)
-    } catch (error) {
-      console.log(error)
-      await showHUD(String(error))
+    } catch (e) {
+      await showHUD(String(e))
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadData();
+    loadingHandler(loadInitialData);
   }, []);
 
   return {
@@ -38,5 +37,6 @@ export function useMenuItemsData() {
     app,
     data,
     loaded: data && data?.menus?.length && app?.name && !loading,
+    refreshMenuItemsData: () => loadingHandler(refreshData),
   }
 }

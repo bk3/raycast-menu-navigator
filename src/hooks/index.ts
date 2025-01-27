@@ -1,2 +1,2 @@
-export * from './useLoadingMessageQueue'
-export * from './useMenuItemsData'
+export * from './use-loading-message-queue'
+export * from './use-menu-items-data'

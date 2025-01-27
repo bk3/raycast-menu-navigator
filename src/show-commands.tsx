@@ -8,7 +8,7 @@ import { useLoadingMessageQueue, useMenuItemsData } from "./hooks";
  * TODO: Update to add reloading of commands
  */
 export default function Command() {
-  const { loading, app, data } = useMenuItemsData()
+  const { loading, app, data, refreshMenuItemsData } = useMenuItemsData()
   const { loadingMessage, loadingState } = useLoadingMessageQueue(loading, app)
   const { options, filter, setFilter, filteredData } = useMenuItemFilters(data)
   const dataLoaded = data && data?.menus?.length;
@@ -41,7 +41,7 @@ export default function Command() {
       )}
 
       {loaded && (
-        <ListItems app={app} data={filter ? filteredData : data} />
+        <ListItems app={app} data={filter ? filteredData : data} refresh={refreshMenuItemsData} />
       )}
     </List>
   );
@@ -53,9 +53,10 @@ export default function Command() {
 interface ListItemsProps {
   app: Application;
   data?: MenusConfig;
+  refresh: () => Promise<void>;
 }
 
-function ListItems({ app, data }: ListItemsProps) {
+function ListItems({ app, data, refresh }: ListItemsProps) {
   if (!data || !data?.menus) return;
   return data?.menus?.map(i => (
     <List.Section title={i.menu} key={i.menu}>
@@ -65,7 +66,7 @@ function ListItems({ app, data }: ListItemsProps) {
           accessories={item.key !== 'NIL' ? [{ tag: `${item.modifier} ${item.key}` }] : undefined}
           key={`${item.menu}-${item.shortcut}`}
           actions={
-            <ListItemActions app={app} item={item} />
+            <ListItemActions app={app} item={item} refresh={refresh} />
           }
         />
       ))}
@@ -79,13 +80,14 @@ function ListItems({ app, data }: ListItemsProps) {
 interface ListItemActionsProps {
   app: Application;
   item: MenuItem;
+  refresh: () => Promise<void>;
 }
 
-function ListItemActions({ app, item }: ListItemActionsProps) {
+function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
   return (
     <ActionPanel>
       <Action
-        title="Execute command"
+        title="Run Command"
         onAction={async () => {
           if (!app?.name) return;
           await runShortcut(app.name, item.menu, item.shortcut)
@@ -93,11 +95,19 @@ function ListItemActions({ app, item }: ListItemActionsProps) {
         }}
       />
       <Action
-        title="Execute and keep Raycast focused"
+        title="Run Command (background)"
         shortcut={{ modifiers: ["shift"], key: "enter" }}
         onAction={async () => {
           if (!app.name) return;
           await runShortcut(app.name, item.menu, item.shortcut)
+        }}
+      />
+      <Action
+        title="Refresh Menu Items"
+        shortcut={{ modifiers: ["ctrl"], key: "enter" }}
+        onAction={async () => {
+          if (!app.name) return;
+          await refresh();
         }}
       />
     </ActionPanel>

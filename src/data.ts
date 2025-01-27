@@ -98,3 +98,17 @@ export async function loadInitialData(app: Application) {
     throw new Error('Shortcuts not found')
   }
 }
+
+/*
+ * Handler for getting data from cache or running applescript to get it
+ */
+export async function refreshData(app: Application) {
+  const data = await getMenuBarShortcuts(app)
+
+  // return data if it exists
+  if (data && data?.menus?.length) {
+    return data;
+  } else {
+    throw new Error('Shortcuts not found')
+  }
+}

@@ -48,13 +48,13 @@ export default function Command() {
           accessories={
             loadingState
               ? [
-                  {
-                    tag: {
-                      value: `${loadingState}`,
-                      color: Color.SecondaryText,
-                    },
+                {
+                  tag: {
+                    value: `${loadingState}`,
+                    color: Color.SecondaryText,
                   },
-                ]
+                },
+              ]
               : undefined
           }
         />

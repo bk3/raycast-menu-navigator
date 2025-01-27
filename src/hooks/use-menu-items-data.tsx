@@ -3,9 +3,8 @@ import { Application, getFrontmostApplication, showHUD } from "@raycast/api";
 import { MenusConfig } from "../types";
 import { loadInitialData, refreshData } from "../data";
 
-
 export function useMenuItemsData() {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [data, setData] = useState<MenusConfig>()
   const [app, setApp] = useState<Application>()
 

@@ -17,3 +17,8 @@ export interface MenusConfig {
   menus: MenuGroup[];
   timestamp: string;
 }
+
+export interface SectionTypes {
+  id: string,
+  value: string;
+}

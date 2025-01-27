@@ -28,7 +28,17 @@ function groupMenuBarItems(items: MenuItem[]): MenuGroup[] {
     const existingGroup = groups.find(group => group.menu === item.menu);
 
     if (existingGroup) {
-      existingGroup.items.push(item);
+      // Check if an identical item already exists in the group
+      const isDuplicate = existingGroup.items.some(existingItem =>
+        existingItem.shortcut === item.shortcut &&
+        existingItem.modifier === item.modifier &&
+        existingItem.key === item.key
+      );
+
+      // Only add the item if it's not a duplicate
+      if (!isDuplicate) {
+        existingGroup.items.push(item);
+      }
     } else {
       groups.push({
         menu: item.menu,

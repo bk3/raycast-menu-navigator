@@ -29,7 +29,6 @@ export async function runShortcut(appName: Application['name'], menu: string, ac
     `)
     return response;
   } catch (e) {
-    console.log('Could not run shortcut:', e)
     throw new Error('Could not run shortcut')
   }
 }

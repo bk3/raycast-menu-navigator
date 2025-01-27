@@ -25,7 +25,6 @@ export async function getMenuBarShortcutsCache(app: Application) {
     const cache = await readFile(getFileName(app))
     return cache;
   } catch (e) {
-    console.log('Could not load local shortcuts')
     throw new Error('Could not load local shortcuts')
   }
 }
@@ -43,7 +42,6 @@ export async function getMenuBarShortcuts(app: Application) {
     await writeFile(getFileName(app), parsed)
     return parsed;
   } catch (e) {
-    console.log('Could not load shortcuts error:', e)
     throw new Error('Could not load shortcuts')
   }
 }
@@ -54,11 +52,9 @@ export async function getMenuBarShortcuts(app: Application) {
  */
 export async function readFile(filename: string): Promise<any> {
   try {
-    console.log(`${environment.supportPath}/${filename}.json`)
     const data = await fs.promises.readFile(`${environment.supportPath}/${filename}.json`, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    console.error('Error reading JSON file:', error);
     throw error;
   }
 }
@@ -72,7 +68,6 @@ export async function writeFile(filename: string, data: any): Promise<void> {
     const jsonData = JSON.stringify(data, null, 2);
     await fs.promises.writeFile(`${environment.supportPath}/${filename}.json`, jsonData, 'utf-8');
   } catch (error) {
-    console.error('Error writing JSON file:', error);
     throw error;
   }
 }
@@ -109,6 +104,6 @@ export async function refreshData(app: Application) {
   if (data && data?.menus?.length) {
     return data;
   } else {
-    throw new Error('Shortcuts not found')
+    throw new Error('Shortcuts not found during refresh')
   }
 }

@@ -1,12 +1,10 @@
 import { List, ActionPanel, Action, closeMainWindow, Application, Color, clearSearchBar } from "@raycast/api";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { runShortcut } from "./actions";
-import { MenuItem, MenusConfig } from "./types";
+import { MenuItem, MenusConfig, SectionTypes } from "./types";
 import { useLoadingMessageQueue, useMenuItemsData } from "./hooks";
+import { useMenuItemFilters } from "./hooks/use-menu-item-filters";
 
-/*
- * TODO: Update to add reloading of commands
- */
 export default function Command() {
   const { loading, app, data, refreshMenuItemsData } = useMenuItemsData()
   const { loadingMessage, loadingState } = useLoadingMessageQueue(loading, app)
@@ -15,23 +13,22 @@ export default function Command() {
   const filterDataLoaded = filteredData && filteredData?.menus?.length
   const loaded = (dataLoaded || filterDataLoaded) && app?.name && !loading;
 
-  // Reset search bar and filter when component mounts
   useEffect(() => {
     clearSearchBar();
-    setFilter('all-commands'); // Reset to default filter
-  }, []); // Empty dependency array means this runs once on mount
+    setFilter('all-commands');
+  }, []);
 
   return (
     <List
       isLoading={loading}
       navigationTitle={!app?.name ? 'Menu Navigator' : `Menu Navigator: ${app?.name}`}
-      searchBarAccessory={(
+      searchBarAccessory={loaded ? (
         <SectionDropdown
           sections={options}
           onSectionFilter={(f) => setFilter(f)}
           defaultValue="all-commands" // Add default value
         />
-      )}
+      ) : undefined}
     >
       {loading && (
         <List.Item
@@ -42,6 +39,15 @@ export default function Command() {
 
       {loaded && (
         <ListItems app={app} data={filter ? filteredData : data} refresh={refreshMenuItemsData} />
+      )}
+
+      {Boolean(!loading && !loaded) && (
+        <List.EmptyView
+          key="not-found"
+          icon={'😔'}
+          title="Commands not found"
+          description={`Unfortunately we couldn't retrieve any ${app?.name ? app.name + ' ' : ''}menu bar commands`}
+        />
       )}
     </List>
   );
@@ -59,12 +65,12 @@ interface ListItemsProps {
 function ListItems({ app, data, refresh }: ListItemsProps) {
   if (!data || !data?.menus) return;
   return data?.menus?.map(i => (
-    <List.Section title={i.menu} key={i.menu}>
+    <List.Section title={i.menu} key={`${app.name}-${i.menu}`}>
       {i.items?.map(item => (
         <List.Item
           title={item.shortcut}
           accessories={item.key !== 'NIL' ? [{ tag: `${item.modifier} ${item.key}` }] : undefined}
-          key={`${item.menu}-${item.shortcut}`}
+          key={`${app.name}-${item.menu}-${item.shortcut}`}
           actions={
             <ListItemActions app={app} item={item} refresh={refresh} />
           }
@@ -117,7 +123,6 @@ function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
 /*
  * Dropdown filters
  */
-type SectionTypes = { id: string, value: string; };
 function SectionDropdown(props: {
   sections: SectionTypes[];
   onSectionFilter: (val: string) => void;
@@ -146,59 +151,3 @@ function SectionDropdown(props: {
   );
 }
 
-/*
- * Menu item filtering
- */
-function useMenuItemFilters(data?: MenusConfig) {
-  const [options, setOptions] = useState<SectionTypes[]>([])
-  const [filter, setFilter] = useState<string>('all-commands') // Set initial state
-  const [filteredData, setFilteredData] = useState<MenusConfig>()
-
-  // Handle available options
-  useEffect(() => {
-    if (!data?.menus?.length) {
-      if (options?.length) setOptions([])
-      return;
-    }
-
-    const sections = data?.menus?.map(m => ({ id: m.menu, value: m.menu }))
-    setOptions(sections)
-  }, [data?.menus])
-
-  // Filter data
-  useEffect(() => {
-    if (!data?.menus?.length) return;
-
-    let menus;
-
-    switch (filter) {
-      case 'all-commands':
-        menus = data.menus;
-        break;
-      case 'shortcut-commands':
-        menus = data.menus.map(menuGroup => ({
-          ...menuGroup,
-          items: menuGroup.items.filter(item => item.shortcut?.length && item.key !== 'NIL')
-        })).filter(menuGroup => menuGroup.items.length > 0);
-        break;
-      case 'no-shortcut-commands':
-        menus = data.menus.map(menuGroup => ({
-          ...menuGroup,
-          items: menuGroup.items.filter(item => !item.shortcut?.length || item.key === 'NIL')
-        })).filter(menuGroup => menuGroup.items.length > 0);
-        break;
-      default:
-        const menuIndex = data?.menus?.findIndex(m => m.menu === filter)
-        if (menuIndex === -1) {
-          menus = data.menus;
-          return
-        };
-        menus = [data?.menus[menuIndex]]
-        break;
-    }
-
-    setFilteredData({ ...data, menus })
-  }, [filter, data])
-
-  return { options, filter, setFilter, filteredData }
-}

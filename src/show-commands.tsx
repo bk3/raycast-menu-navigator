@@ -138,7 +138,7 @@ function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
         }}
       />
       <Action
-        title="Refresh Menu Items"
+        title="Refresh Commands"
         shortcut={{ modifiers: ["ctrl"], key: "enter" }}
         onAction={async () => {
           if (!app.name) return;

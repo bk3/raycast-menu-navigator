@@ -130,7 +130,7 @@ function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
         }}
       />
       <Action
-        title="Run Command (background)"
+        title="Run Command (Background)"
         shortcut={{ modifiers: ["shift"], key: "enter" }}
         onAction={async () => {
           if (!app.name) return;
@@ -165,22 +165,21 @@ function SectionDropdown(props: {
       onChange={(newValue) => onSectionFilter(newValue)}
       defaultValue={defaultValue} // Add default value
     >
-      <List.Dropdown.Section title="Command Filters">
-        <List.Dropdown.Item title="All Commands" value="all-commands" />
-        <List.Dropdown.Item
-          title="Shortcut Commands"
-          value="shortcut-commands"
-        />
-        <List.Dropdown.Item
-          title="No Shortcut Commands"
-          value="no-shortcut-commands"
-        />
-      </List.Dropdown.Section>
-
-      <List.Dropdown.Section title="Menu Filters">
+      <List.Dropdown.Item title="All Commands" value="all-commands" />
+      <List.Dropdown.Section title="Menus">
         {sections.map((s) => (
           <List.Dropdown.Item key={s.id} title={s.value} value={s.id} />
         ))}
+      </List.Dropdown.Section>
+      <List.Dropdown.Section title="Shortcuts">
+        <List.Dropdown.Item
+          title="Assigned"
+          value="shortcut-commands"
+        />
+        <List.Dropdown.Item
+          title="Unassigned"
+          value="no-shortcut-commands"
+        />
       </List.Dropdown.Section>
     </List.Dropdown>
   );

@@ -16,8 +16,8 @@ const MODIFIER_KEYCODES: { [key: number]: string } = {
   12: "⌃",
   13: "⌃ ⇧",
   14: "⌃ ⌥",
-  24: "fn",
-  28: "⌃ fn",
+  24: "Fn",
+  28: "Fn ⌃",
 };
 
 /*
@@ -66,6 +66,7 @@ function splitKeysForValue(item: string, start: string, end?: string) {
  */
 export function parseAppleScriptResponse(app: Application, response: string) {
   const menuBarItems = response.split("MNS:");
+  console.log({ menuBarItems });
 
   // remove empty first string after split
   menuBarItems.shift();

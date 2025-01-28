@@ -48,13 +48,13 @@ export default function Command() {
           accessories={
             loadingState
               ? [
-                {
-                  tag: {
-                    value: `${loadingState}`,
-                    color: Color.SecondaryText,
+                  {
+                    tag: {
+                      value: `${loadingState}`,
+                      color: Color.SecondaryText,
+                    },
                   },
-                },
-              ]
+                ]
               : undefined
           }
         />
@@ -130,7 +130,7 @@ function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
         }}
       />
       <Action
-        title="Run Command (Background)"
+        title="Run Command (background)"
         shortcut={{ modifiers: ["shift"], key: "enter" }}
         onAction={async () => {
           if (!app.name) return;
@@ -172,14 +172,8 @@ function SectionDropdown(props: {
         ))}
       </List.Dropdown.Section>
       <List.Dropdown.Section title="Shortcuts">
-        <List.Dropdown.Item
-          title="Assigned"
-          value="shortcut-commands"
-        />
-        <List.Dropdown.Item
-          title="Unassigned"
-          value="no-shortcut-commands"
-        />
+        <List.Dropdown.Item title="Assigned" value="shortcut-commands" />
+        <List.Dropdown.Item title="Unassigned" value="no-shortcut-commands" />
       </List.Dropdown.Section>
     </List.Dropdown>
   );

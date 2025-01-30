@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "menu-navigator",
   "title": "Menu Navigator",
-  "description": "Access and execute menu bar item commands and shortcuts",
+  "description": "View and run menu bar item commands and keyboard shortcuts",
   "icon": "menu-navigator-icon.png",
   "author": "bkimbriel",
   "access": "public",
@@ -16,7 +16,7 @@
       "name": "show-commands",
       "title": "Show Commands",
       "subtitle": "Menu Navigator",
-      "description": "Browse and execute menu bar item commands",
+      "description": "View and run menu bar item commands",
       "mode": "view"
     }
   ],

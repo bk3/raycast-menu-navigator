@@ -1,0 +1,72 @@
+import { Application } from "@raycast/api";
+import { runAppleScript } from "@raycast/utils";
+import { MenuItem } from "../types";
+
+export async function runShortcut(appName: Application["name"], item: MenuItem) {
+  const menuAction = `
+    tell application "${appName}"
+        activate
+    end tell
+
+    tell application "System Events"
+      tell process "${appName}"
+        tell menu bar 1
+          tell menu bar item "${item.menu}"
+            tell menu "${item.menu}"
+              click menu item "${item.shortcut}"
+            end tell
+          end tell
+        end tell
+      end tell
+    end tell
+  `
+
+  const subMenuAction = `
+    -- Helper function to split text by delimiter
+    on splitText(theText, theDelimiter)
+        set AppleScript's text item delimiters to theDelimiter
+        set theTextItems to every text item of theText
+        set AppleScript's text item delimiters to ""
+        return theTextItems
+    end splitText
+
+    -- Split the path into components
+    set menuItems to splitText("${item.path}", ">")
+    
+    tell application "${appName}"
+        activate
+    end tell
+    
+    tell application "System Events"
+        tell process "${appName}"
+            tell menu bar 1
+              tell menu bar item (first item of menuItems)
+                set currentMenu to menu 1
+                
+                -- Loop through the remaining menu items to navigate submenus
+                repeat with i from 2 to (count of menuItems)
+                    set currentMenuItem to item i of menuItems
+                    
+                    -- If this is the last item, click it
+                    if i is equal to (count of menuItems) then
+                        click menu item currentMenuItem of currentMenu
+                    else
+                        -- Otherwise, get its submenu
+                        set currentMenu to menu 1 of menu item currentMenuItem of currentMenu
+                    end if
+                end repeat
+              end tell
+            end tell
+        end tell
+    end tell
+  `
+
+  try {
+    const isSubmenu = item.path?.split('>').length > 2
+    const script = isSubmenu ? subMenuAction : menuAction;
+    const response = await runAppleScript(script);
+    return response;
+  } catch (e) {
+    throw new Error("Could not run shortcut");
+  }
+}

@@ -1,30 +1,35 @@
 import { useEffect, useState } from "react";
 import { MenusConfig, SectionTypes } from "../types";
 
-/*
- * Menu item filtering
+/**
+ * Hook to handle filtering menu items based on different criteria
+ * @param data The menu configuration data to filter
+ * @returns Filter options, current filter, filter setter, and filtered data
  */
 export function useMenuItemFilters(data?: MenusConfig) {
   const [options, setOptions] = useState<SectionTypes[]>([]);
-  const [filter, setFilter] = useState<string>("all-commands"); // Set initial state
+  const [filter, setFilter] = useState<string>("all-commands");
   const [filteredData, setFilteredData] = useState<MenusConfig>();
 
-  // Handle available options
+  // Generate filter options from available menus
   useEffect(() => {
     if (!data?.menus?.length) {
-      if (options?.length) setOptions([]);
+      if (options.length) setOptions([]);
       return;
     }
 
-    const sections = data?.menus?.map((m) => ({ id: m.menu, value: m.menu }));
+    const sections = data.menus.map((menu) => ({
+      id: menu.menu,
+      value: menu.menu,
+    }));
     setOptions(sections);
   }, [data?.menus]);
 
-  // Filter data
+  // Apply selected filter to data
   useEffect(() => {
     if (!data?.menus?.length) return;
 
-    const menuIndex = data?.menus?.findIndex((m) => m.menu === filter);
+    const menuIndex = data.menus.findIndex((menu) => menu.menu === filter);
     let menus;
 
     switch (filter) {
@@ -51,12 +56,20 @@ export function useMenuItemFilters(data?: MenusConfig) {
           }))
           .filter((menuGroup) => menuGroup.items.length > 0);
         break;
+      case "menu-commands":
+        menus = data.menus
+          .map((menuGroup) => ({
+            ...menuGroup,
+            items: menuGroup.items.filter((item) => item.submenu?.length),
+          }))
+          .filter((menuGroup) => menuGroup.items.length > 0);
+        break;
       default:
         if (menuIndex === -1) {
           menus = data.menus;
           return;
         }
-        menus = [data?.menus[menuIndex]];
+        menus = [data.menus[menuIndex]];
         break;
     }
 

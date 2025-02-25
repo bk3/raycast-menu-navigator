@@ -114,14 +114,6 @@ on run
 													set subMenuSubrole to value of attribute "AXSubrole" of subMenuItem
 													set subEnabled to value of attribute "AXEnabled" of subMenuItem
 													
-													log "---------"
-													log "Menu Name:" & menuName
-													log "Item Name:" & itemName
-													log "Sub Item Name:" & subItemName
-													log "Sub Menu Role:" & subMenuRole
-													log "Sub Menu Subrole:" & subMenuSubrole
-													log "Sub Enabled:" & subEnabled
-													
 													if subMenuRole is equal to "AXMenuItemTitle" or ¬
 														subMenuSubrole is equal to "AXHeaderItem" or ¬
                             subItemName ends with ":" then
@@ -147,8 +139,6 @@ on run
 												end try
 												
 												set menuItemInfo to {menuPath:subPath, shortcutName:subItemName, shortcutModifiers:shortcutModifiers, shortcutKey:shortcutKey, isSectionTitle:isSubTitle}
-												log "Submenu Shortcut:"
-												log menuItemInfo
 												set end of allShortcuts to menuItemInfo
 											end if
 										end try
@@ -172,8 +162,6 @@ on run
 									end try
 									
 									set menuItemInfo to {menuPath:currentPath, shortcutName:itemName, shortcutModifiers:shortcutModifiers, shortcutKey:shortcutKey, isSectionTitle:isTitle}
-									log "Primary Shortcut"
-									log menuItemInfo
 									set end of allShortcuts to menuItemInfo
 								end if
 							end if

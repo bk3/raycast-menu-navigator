@@ -1,10 +1,10 @@
 import { List, Color, clearSearchBar } from "@raycast/api";
 import { useEffect } from "react";
-import { useLoadingMessageQueue, useMenuItemsData, useMenuItemFilters } from "./hooks";
+import { useLoadingMessageQueue, useMenuItemsDataLoader, useMenuItemFilters } from "./hooks";
 import { ListItems, SectionDropdown } from "./ui";
 
 export default function Command() {
-  const { loading, app, data, refreshMenuItemsData } = useMenuItemsData();
+  const { loading, app, data, refreshMenuItemsData } = useMenuItemsDataLoader();
   const { loadingMessage, loadingState } = useLoadingMessageQueue(loading, app);
   const { options, filter, setFilter, filteredData } = useMenuItemFilters(data);
 
@@ -20,7 +20,7 @@ export default function Command() {
   return (
     <List
       isLoading={loading}
-      searchBarPlaceholder={`Search ${app?.name} commands...`}
+      searchBarPlaceholder={`${loading ? 'Loading' : 'Search'} ${app?.name} commands...`}
       searchBarAccessory={
         !loaded ? undefined : (
           <SectionDropdown

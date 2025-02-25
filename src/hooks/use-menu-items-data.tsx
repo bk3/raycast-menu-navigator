@@ -1,57 +1,85 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Application, getFrontmostApplication, showHUD } from "@raycast/api";
 import { MenusConfig } from "../types";
 import { getMenuBarShortcuts, getMenuBarShortcutsApplescript } from "../utils";
 
-/**
- * Hook to manage menu items data for the frontmost application
- * @returns Object containing loading state, application info, menu data and refresh function
- */
-export function useMenuItemsData() {
-  const [loading, setLoading] = useState(false);
+export function useMenuItemsDataLoader() {
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MenusConfig>();
   const [app, setApp] = useState<Application>();
-  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined); // Ref to hold interval ID
 
-  /**
-   * Handles loading menu items data from the provided data loader function
-   * @param getShortcuts Function to load menu items data for an application
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const loadingRef = useRef(true); // Also initialize this as true
+  const initialLoadRef = useRef(true); // Track if this is the first load
+
+  /*
+   * Manage loading of menu item data
    */
   async function loadingHandler(refresh?: boolean) {
+    if (loadingRef.current && !initialLoadRef.current) return;
+
     try {
       setLoading(true);
+      loadingRef.current = true;
 
+      // get current focused application
       const frontmostApp = await getFrontmostApplication();
       if (!frontmostApp.name) throw new Error("Could not detect frontmost application");
 
-      if (!refresh && frontmostApp?.name === app?.name) return;
-      setApp(frontmostApp);
+      // only reload if user is hard refreshing or the focused app has changed
+      if (!refresh && frontmostApp?.name === app?.name && !initialLoadRef.current) {
+        setLoading(false);
+        loadingRef.current = false;
+        return;
+      }
 
+      // update app and menu data
+      setApp(frontmostApp);
       const getShortcuts = refresh ? getMenuBarShortcutsApplescript : getMenuBarShortcuts;
       const menuData = await getShortcuts(frontmostApp);
       setData(menuData);
+
+      // update initial loading
+      if (!initialLoadRef.current) return;
+      initialLoadRef.current = false;
     } catch (error) {
       await showHUD(String(error));
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }
 
-  // Load initial data when component mounts
+  /*
+   * Load initial data
+   */
   useEffect(() => {
     loadingHandler();
+
+    return () => {
+      if (!intervalRef.current) return;
+      clearInterval(intervalRef.current);
+    };
   }, []);
 
-  // Listen for focused application changes once open
+  /*
+   * Listen for focused application changes and load new app data
+   */
   useEffect(() => {
+    if (!app?.name) return;
+
     const checkFocusedApplication = async () => {
-      const updatedApp = await getFrontmostApplication();
-      if (app?.name === updatedApp.name) return;
-      await loadingHandler();
+      try {
+        const updatedApp = await getFrontmostApplication();
+        if (app?.name === updatedApp.name) return;
+        await loadingHandler();
+      } catch (error) {
+        console.error('Error checking focused app:', error);
+      }
     };
 
+    if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(checkFocusedApplication, 1000);
-    checkFocusedApplication();
 
     return () => {
       if (!intervalRef.current) return;
@@ -59,11 +87,11 @@ export function useMenuItemsData() {
     };
   }, [app?.name]);
 
-  return {
+  return useMemo(() => ({
     loading,
     app,
     data,
     loaded: Boolean(data?.menus?.length && app?.name && !loading),
     refreshMenuItemsData: () => loadingHandler(true),
-  };
+  }), [loading, app?.name, data]);
 }

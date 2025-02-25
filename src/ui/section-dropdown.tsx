@@ -12,7 +12,7 @@ export function SectionDropdown(props: {
       tooltip="Filters"
       storeValue={false}
       onChange={(newValue) => onSectionFilter(newValue)}
-      defaultValue={defaultValue} // Add default value
+      defaultValue={defaultValue}
     >
       <List.Dropdown.Item title="All Commands" value="all-commands" />
       <List.Dropdown.Item title="Menu Commands" value="menu-commands" />

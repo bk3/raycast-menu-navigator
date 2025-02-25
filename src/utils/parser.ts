@@ -23,7 +23,7 @@ interface ParsedMenuItem extends MenuItem {
   section: string;
 }
 
-/**
+/*
  * Groups menu bar items into a hierarchical structure by menu group (e.g. Edit, View, etc)
  */
 function groupMenuBarItems(items: ParsedMenuItem[]): MenuGroup[] {
@@ -109,7 +109,7 @@ function groupMenuBarItems(items: ParsedMenuItem[]): MenuGroup[] {
   return groups;
 }
 
-/**
+/*
  * Extracts a value from a string between start and optional end delimiters
  */
 function extractValue(text: string, start: string, end?: string): string {
@@ -117,7 +117,7 @@ function extractValue(text: string, start: string, end?: string): string {
   return end ? value.split(end)[0] : value;
 }
 
-/**
+/*
  * Parses the AppleScript response and returns formatted menu data
  */
 export function parseAppleScriptResponse(app: Application, response: string) {
@@ -140,7 +140,7 @@ export function parseAppleScriptResponse(app: Application, response: string) {
     };
   });
 
-  // Reorder groups to desired sequence
+  // Reorder menu groups
   const grouped = groupMenuBarItems(items);
   const menus = [
     ...grouped.slice(2), // Main groups

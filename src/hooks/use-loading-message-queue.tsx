@@ -3,14 +3,9 @@ import { useState, useEffect } from "react";
 
 export function useLoadingMessageQueue(loading: boolean, app?: Application) {
   const [loadingMessage, setLoadingMessage] = useState("");
-  const [loadingState, setLoadingState] = useState("");
+  const [loadingState, setLoadingState] = useState("Please wait");
 
-  const messages = [
-    `Processing`,
-    `Please wait`,
-    `Getting close`,
-    `Almost there`,
-  ];
+  const messages = [`Loading`, `Processing`, `Getting close`, `Almost there`];
 
   // Set initial loading message when app.name becomes available
   useEffect(() => {
@@ -19,6 +14,7 @@ export function useLoadingMessageQueue(loading: boolean, app?: Application) {
 
     return () => {
       setLoadingMessage("");
+      setLoadingState("Please wait");
     };
   }, [app?.name]);
 

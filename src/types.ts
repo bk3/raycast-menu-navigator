@@ -5,6 +5,10 @@ export interface MenuItem {
   shortcut: string;
   modifier: string;
   key: string;
+  path: string;
+  section?: string;
+  isSectionTitle?: boolean;
+  submenu?: MenuItem[]; // Add submenu support to MenuItem
 }
 
 export interface MenuGroup {

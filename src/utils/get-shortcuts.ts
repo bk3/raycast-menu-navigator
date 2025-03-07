@@ -64,48 +64,28 @@ const getMenuBarItemsApplescript = () => {
             set shortcutModifiers to shortcutModifiers of recordItem
             set shortcutKey to shortcutKey of recordItem
             set isSectionTitle to isSectionTitle of recordItem
-            
-            -- Handle section titles and their items
-            if isSectionTitle is true then
-                -- Start a new section
-                set currentSection to shortcutName
-                -- Add section marker
-                set recordString to "|MN:MP:" & menuPath & ":SN:" & shortcutName & ":SM:" & shortcutModifiers & ":SK:" & shortcutKey & ":ST:" & isSectionTitle & ":SEC:" & currentSection
-            else
-                -- Regular item - include the current section it belongs to
-                set recordString to "|MN:MP:" & menuPath & ":SN:" & shortcutName & ":SM:" & shortcutModifiers & ":SK:" & shortcutKey & ":ST:" & isSectionTitle & ":SEC:" & currentSection
-            end if
+
+            if isSectionTitle then set currentSection to shortcutName
+            set recordString to "|MN:MP:" & menuPath & ":SN:" & shortcutName & ":SM:" & shortcutModifiers & ":SK:" & shortcutKey & ":ST:" & isSectionTitle & ":SEC:" & currentSection
             
             -- Append to result string
-            if resultString is not "" then
-                set resultString to resultString
-            end if
             set resultString to resultString & recordString
         end repeat
         return resultString
     end convertRecordsToString
 
     -- Convert special glyphs to their symbol representations
-    on convertGlyphToSymbol(shortcutKey, shortcutGlyph)
-      if shortcutGlyph is not missing value then
-        if shortcutGlyph is equal to 23 then
-          return "⌫"
-        else if shortcutGlyph is equal to 100 then
-          return "←"
-        else if shortcutGlyph is equal to 101 then
-          return "→"
-        else if shortcutGlyph is equal to 104 then
-          return "↑"
-        else if shortcutGlyph is equal to 106 then
-          return "↓"
-        else if shortcutKey is equal to tab then
-          return "⇥"
-        else if shortcutKey is equal to return then
-          return "⏎"
-        else if shortcutKey is equal to space then
-          return "Space"
-        end if
+    on convertGlyphToSymbol(shortcutKey, shortcutGlyph, path)
+      if shortcutGlyph is not missing value or shortcutKey is not missing value then
+        log "key: " & (shortcutKey as string) & " - glyph: " & (shortcutGlyph as string) & " - menu: " & path
       end if
+
+      if shortcutGlyph is not missing value then
+        return shortcutGlyph
+      end if
+      
+      -- If no glyph, return shortcutKey or "NIL" if missing
+      if shortcutKey is missing value then set shortcutKey to "NIL"
       return shortcutKey
     end convertGlyphToSymbol
 
@@ -175,15 +155,10 @@ const getMenuBarItemsApplescript = () => {
                             end try
                             
                             -- These AXMenuItem* commands must stay in the run handler
-                            set shortcutKey to "NIL"
-                            set shortcutModifiers to "NIL"
-                            
                             try
                               set shortcutKey to value of attribute "AXMenuItemCmdChar" of subMenuItem
-                              if shortcutKey is missing value then set shortcutKey to "NIL"
-                              
                               set shortcutGlyph to value of attribute "AXMenuItemCmdGlyph" of subMenuItem
-                              set shortcutKey to my convertGlyphToSymbol(shortcutKey, shortcutGlyph)
+                              set shortcutKey to my convertGlyphToSymbol(shortcutKey, shortcutGlyph, subPath)
                               
                               if shortcutKey is not "NIL" then
                                 set shortcutModifiers to value of attribute "AXMenuItemCmdModifiers" of subMenuItem
@@ -198,15 +173,10 @@ const getMenuBarItemsApplescript = () => {
                       end repeat
                     else
                       -- Process regular menu item (AXMenuItem* commands must stay here)
-                      set shortcutKey to "NIL"
-                      set shortcutModifiers to "NIL"
-                      
                       try
                         set shortcutKey to value of attribute "AXMenuItemCmdChar" of menuItem
-                        if shortcutKey is missing value then set shortcutKey to "NIL"
-                        
                         set shortcutGlyph to value of attribute "AXMenuItemCmdGlyph" of menuItem
-                        set shortcutKey to my convertGlyphToSymbol(shortcutKey, shortcutGlyph)
+                        set shortcutKey to my convertGlyphToSymbol(shortcutKey, shortcutGlyph, currentPath)
                         
                         if shortcutKey is not "NIL" then
                           set shortcutModifiers to value of attribute "AXMenuItemCmdModifiers" of menuItem

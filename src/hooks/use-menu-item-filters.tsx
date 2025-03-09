@@ -20,12 +20,12 @@ const filterFunctions = {
   [FILTER_TYPES.SHORTCUT]: (menus: MenusConfig['menus']) =>
     menus.map(menuGroup => ({
       ...menuGroup,
-      items: menuGroup.items.filter(item => item.shortcut?.length && item.key !== "NIL")
+      items: menuGroup.items.filter(item => item.shortcut?.length && item.key !== null)
     })).filter(menuGroup => menuGroup.items.length > 0),
   [FILTER_TYPES.NO_SHORTCUT]: (menus: MenusConfig['menus']) =>
     menus.map(menuGroup => ({
       ...menuGroup,
-      items: menuGroup.items.filter(item => !item.shortcut?.length || item.key === "NIL")
+      items: menuGroup.items.filter(item => !item.shortcut?.length || item.key === null)
     })).filter(menuGroup => menuGroup.items.length > 0),
   [FILTER_TYPES.MENU]: (menus: MenusConfig['menus']) =>
     menus.map(menuGroup => ({

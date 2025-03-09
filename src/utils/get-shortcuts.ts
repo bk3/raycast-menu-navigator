@@ -4,7 +4,7 @@ import { parseAppleScriptResponse } from "./parser";
 import { getFileNameForCache, readFileCache, writeFileCache } from "./files-cache";
 
 /*
- * Get menu bar shortcuts for app from the local cache
+ * Load menu bar shortcuts for app from the local cache
  */
 async function getMenuBarShortcutsCache(app: Application) {
   try {
@@ -16,19 +16,25 @@ async function getMenuBarShortcutsCache(app: Application) {
 };
 
 /*
- * Get menu bar shortcuts for app using AppleScript
+ * Load menu bar shortcuts for app using AppleScript
  * Retrieves shortcuts from AppleScript, parses them and saves to local cache
  */
 export async function getMenuBarShortcutsApplescript(app: Application) {
+  console.log('get menu bar shortcuts applescript')
   try {
-    const response = await runAppleScript(getMenuBarItemsApplescript(), { timeout: 120000 });
+    const response = await runAppleScript(getMenuBarItemsApplescript(app), { timeout: 120000 });
+    console.log('response success')
     if (!response?.includes("|MN:")) {
       throw new Error("Invalid shortcuts response");
     }
+
     const parsed = parseAppleScriptResponse(app, response);
+    console.log('parse success')
     await writeFileCache(getFileNameForCache(app), parsed);
+    console.log('write cache success')
     return parsed;
-  } catch {
+  } catch (e) {
+    console.log('e:', e)
     throw new Error("Could not load shortcuts");
   }
 };
@@ -50,59 +56,63 @@ export async function getMenuBarShortcuts(app: Application) {
   return data;
 };
 
-const getMenuBarItemsApplescript = () => {
+/*
+ * AppleScript to get menu bar items and shortcuts
+ */
+const getMenuBarItemsApplescript = (app: Application) => {
   return `
-    -- Convert a list of records to a delimited string with section grouping
+    -- Convert a list of menu shortcut records to a delimited string with section grouping
     on convertRecordsToString(recordsList)
+        -- Initialize empty strings for building the result
         set resultString to ""
         set currentSection to ""
         
         repeat with recordItem in recordsList
-            -- Extract values from the record
-            set menuPath to menuPath of recordItem
-            set shortcutName to shortcutName of recordItem
-            set shortcutModifiers to shortcutModifiers of recordItem
-            set shortcutKey to shortcutKey of recordItem
-            set isSectionTitle to isSectionTitle of recordItem
-
-            if isSectionTitle then set currentSection to shortcutName
-            set recordString to "|MN:MP:" & menuPath & ":SN:" & shortcutName & ":SM:" & shortcutModifiers & ":SK:" & shortcutKey & ":ST:" & isSectionTitle & ":SEC:" & currentSection
+            -- Get all required fields from the record
+            set {menuPath, shortcutName, shortcutModifiers, shortcutKey, shortcutGlyph, isSectionTitle} to ¬
+                {menuPath of recordItem, shortcutName of recordItem, ¬
+                shortcutModifiers of recordItem, shortcutKey of recordItem, shortcutGlyph of recordItem, ¬
+                isSectionTitle of recordItem}
             
-            -- Append to result string
+            -- Update current section if this is a section title
+            if isSectionTitle then set currentSection to shortcutName
+            
+            -- Build the record string with field delimiters
+            set recordString to "|MN:MP:" & menuPath & ¬
+                ":SN:" & shortcutName & ¬
+                ":SM:" & shortcutModifiers & ¬
+                ":SK:" & shortcutKey & ¬
+                ":SG:" & shortcutGlyph & ¬
+                ":ST:" & isSectionTitle & ¬
+                ":SEC:" & currentSection
+            
+            -- Append the record to the result string
             set resultString to resultString & recordString
         end repeat
+        
         return resultString
     end convertRecordsToString
 
-    -- Convert special glyphs to their symbol representations
-    on convertGlyphToSymbol(shortcutKey, shortcutGlyph, path)
-      if shortcutGlyph is not missing value or shortcutKey is not missing value then
-        log "key: " & (shortcutKey as string) & " - glyph: " & (shortcutGlyph as string) & " - menu: " & path
-      end if
-
-      if shortcutGlyph is not missing value then
-        return shortcutGlyph
-      end if
-      
-      -- If no glyph, return shortcutKey or "NIL" if missing
-      if shortcutKey is missing value then set shortcutKey to "NIL"
-      return shortcutKey
-    end convertGlyphToSymbol
 
     -- Check if a menu item name is valid
     on isValidMenuItemName(itemName)
       return (itemName is not "" and itemName is not missing value)
     end isValidMenuItemName
 
+
+    -- Run script to get all menu items
     on run
       set allShortcuts to {}
       
       tell application "System Events"
-        set frontApp to first application process whose frontmost is true
-        set appName to name of frontApp
+        -- Use the passed application name
+        set appName to "${app.name}"
         
         try
-          set menuBar to menu bar 1 of frontApp
+          -- Get the application process directly by name
+          set targetApp to application process appName
+          
+          set menuBar to menu bar 1 of targetApp
           
           repeat with menuBarItem in menu bar items of menuBar
             set menuName to name of menuBarItem
@@ -130,9 +140,8 @@ const getMenuBarItemsApplescript = () => {
                       end if
                     end try
                     
-                    -- Check if the menu item has a submenu
+                    -- Check if the menu item has a submenu and process submenu items
                     if exists menu 1 of menuItem then
-                      -- Process submenu items
                       set subMenuItems to menu items of menu 1 of menuItem
                       repeat with subMenuItem in subMenuItems
                         try
@@ -156,35 +165,34 @@ const getMenuBarItemsApplescript = () => {
                             
                             -- These AXMenuItem* commands must stay in the run handler
                             try
+                              set shortcutModifiers to value of attribute "AXMenuItemCmdModifiers" of subMenuItem
                               set shortcutKey to value of attribute "AXMenuItemCmdChar" of subMenuItem
                               set shortcutGlyph to value of attribute "AXMenuItemCmdGlyph" of subMenuItem
-                              set shortcutKey to my convertGlyphToSymbol(shortcutKey, shortcutGlyph, subPath)
-                              
-                              if shortcutKey is not "NIL" then
-                                set shortcutModifiers to value of attribute "AXMenuItemCmdModifiers" of subMenuItem
-                                if shortcutModifiers is missing value then set shortcutModifiers to "NIL"
-                              end if
+
+                              if shortcutModifiers is missing value then set shortcutModifiers to "null"
+                              if shortcutKey is missing value then set shortcutKey to "null"
+                              if shortcutGlyph is missing value then set shortcutGlyph to "null"
                             end try
                             
-                            set menuItemInfo to {menuPath:subPath, shortcutName:subItemName, shortcutModifiers:shortcutModifiers, shortcutKey:shortcutKey, isSectionTitle:isSubTitle}
+                            set menuItemInfo to {menuPath:subPath, shortcutName:subItemName, shortcutModifiers:shortcutModifiers, shortcutKey:shortcutKey, shortcutGlyph:shortcutGlyph, isSectionTitle:isSubTitle}
                             set end of allShortcuts to menuItemInfo
                           end if
                         end try
                       end repeat
+
+                    -- Process regular menu item (AXMenuItem* commands must stay here)
                     else
-                      -- Process regular menu item (AXMenuItem* commands must stay here)
                       try
                         set shortcutKey to value of attribute "AXMenuItemCmdChar" of menuItem
                         set shortcutGlyph to value of attribute "AXMenuItemCmdGlyph" of menuItem
-                        set shortcutKey to my convertGlyphToSymbol(shortcutKey, shortcutGlyph, currentPath)
-                        
-                        if shortcutKey is not "NIL" then
-                          set shortcutModifiers to value of attribute "AXMenuItemCmdModifiers" of menuItem
-                          if shortcutModifiers is missing value then set shortcutModifiers to "NIL"
-                        end if
+                        set shortcutModifiers to value of attribute "AXMenuItemCmdModifiers" of menuItem
+
+                        if shortcutModifiers is missing value then set shortcutModifiers to "null"
+                        if shortcutKey is missing value then set shortcutKey to "null"
+                        if shortcutGlyph is missing value then set shortcutGlyph to "null"
                       end try
                       
-                      set menuItemInfo to {menuPath:currentPath, shortcutName:itemName, shortcutModifiers:shortcutModifiers, shortcutKey:shortcutKey, isSectionTitle:isTitle}
+                      set menuItemInfo to {menuPath:currentPath, shortcutName:itemName, shortcutModifiers:shortcutModifiers, shortcutKey:shortcutKey, shortcutGlyph:shortcutGlyph, isSectionTitle:isTitle}
                       set end of allShortcuts to menuItemInfo
                     end if
                   end if

@@ -12,6 +12,11 @@ export function useMenuItemsDataLoader() {
   const loadingRef = useRef(true); // Also initialize this as true
   const initialLoadRef = useRef(true); // Track if this is the first load
 
+  function updateLoading(loading: boolean) {
+    setLoading(loading);
+    loadingRef.current = loading;
+  }
+
   /*
    * Manage loading of menu item data
    */
@@ -19,8 +24,7 @@ export function useMenuItemsDataLoader() {
     if (loadingRef.current && !initialLoadRef.current) return;
 
     try {
-      setLoading(true);
-      loadingRef.current = true;
+      updateLoading(true)
 
       // get current focused application
       const frontmostApp = await getFrontmostApplication();
@@ -28,8 +32,7 @@ export function useMenuItemsDataLoader() {
 
       // only reload if user is hard refreshing or the focused app has changed
       if (!refresh && frontmostApp?.name === app?.name && !initialLoadRef.current) {
-        setLoading(false);
-        loadingRef.current = false;
+        updateLoading(false)
         return;
       }
 
@@ -41,12 +44,10 @@ export function useMenuItemsDataLoader() {
 
       // update initial loading
       if (!initialLoadRef.current) return;
-      initialLoadRef.current = false;
+      updateLoading(false)
     } catch (error) {
       await showHUD(String(error));
-    } finally {
-      setLoading(false);
-      loadingRef.current = false;
+      updateLoading(false)
     }
   }
 

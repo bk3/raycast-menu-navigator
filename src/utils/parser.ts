@@ -1,48 +1,6 @@
 import { Application } from "@raycast/api";
 import { MenuGroup, MenuItem } from "../types";
 
-// Map of modifier key codes to their symbols
-const MODIFIER_KEYCODES: Record<number, string> = {
-  0: "⌘",
-  1: "⇧ ⌘",
-  2: "⌥ ⌘",
-  3: "⌥ ⇧ ⌘",
-  4: "⌃ ⌘",
-  5: "⌃ ⇧ ⌘",
-  6: "⌃ ⌥ ⌘",
-  7: "⌃ ⌥ ⇧ ⌘",
-  8: "⌥",
-  9: "⇧ ⌥",
-  12: "⌃",
-  13: "⌃ ⇧",
-  14: "⌃ ⌥",
-  15: "⌃ ⌥ ⇧",
-  24: "Fn",
-  28: "Fn ⌃",
-  32: "⇧"
-};
-
-const SHORTCUT_GLYPHS: Record<number | string, string> = {
-  2: "⇥",    // Tab
-  9: "space",// Spacebar
-  11: "⏎",   // Enter
-  23: "⌫",   // Delete/Backspace
-  27: "⎋",   // Escape
-  71: "⌧",   // Clear
-  100: "←",  // Left Arrow
-  101: "→",  // Right Arrow
-  104: "↑",  // Up Arrow
-  106: "↓",  // Down Arrow
-  114: "⌗",  // Number/Hash
-  115: "↖",  // Home
-  116: "⇞",  // Page Up
-  117: "⌦",  // Forward Delete
-  119: "↘",  // End
-  121: "⇟",  // Page Down
-  149: "globe",  // Page Down
-  150: "microphone",  // Page Down
-};
-
 interface ParsedMenuItem extends MenuItem {
   isSectionTitle: boolean;
   section: string;
@@ -70,8 +28,9 @@ function groupMenuBarItems(items: ParsedMenuItem[]): MenuGroup[] {
         path: parentPath,
         menu: parentMenu,
         shortcut: parentMenu,
-        modifier: "",
-        key: "NIL",
+        modifier: null,
+        key: null,
+        glyph: null,
         submenu: [],
       };
       itemsByPath.set(parentPath, parentItem);
@@ -137,9 +96,14 @@ function groupMenuBarItems(items: ParsedMenuItem[]): MenuGroup[] {
 /*
  * Extracts a value from a string between start and optional end delimiters
  */
-function extractValue(text: string, start: string, end?: string): string {
+function extract(text: string, start: string, end?: string): string {
   const [, value] = text.split(start);
-  return end ? value.split(end)[0] : value;
+  return end ? value.split(end)[0].trim() : value.trim();
+}
+
+function handleNull(val: string): string | null {
+  if (val === 'null') return null;
+  return val;
 }
 
 /*
@@ -149,19 +113,19 @@ export function parseAppleScriptResponse(app: Application, response: string) {
   const menuBarItems = response.split("|MN:").slice(1);
 
   const items = menuBarItems.map((item) => {
-    const path = extractValue(item, "MP:", ":SN");
+    const path = extract(item, "MP:", ":SN");
     const menus = path.split(">");
     const menu = menus[menus.length - 2];
 
     return {
       path,
       menu,
-      shortcut: extractValue(item, "SN:", ":SM"),
-      modifier:
-        MODIFIER_KEYCODES[Number(extractValue(item, "SM:", ":SK"))] || "",
-      key: extractValue(item, "SK:", ":ST"),
-      isSectionTitle: extractValue(item, "ST:", ":SEC") === "true",
-      section: extractValue(item, ":SEC:"),
+      shortcut: extract(item, "SN:", ":SM"),
+      modifier: handleNull(extract(item, "SM:", ":SK")),
+      key: handleNull(extract(item, "SK:", ":SG")),
+      glyph: handleNull(extract(item, "SG:", ":ST")),
+      isSectionTitle: extract(item, "ST:", ":SEC") === "true",
+      section: extract(item, ":SEC:"),
     };
   });
 

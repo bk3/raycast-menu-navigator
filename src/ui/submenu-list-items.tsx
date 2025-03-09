@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Application, List } from "@raycast/api";
 import { MenuItem } from "../types";
 import { ListItemActions } from "./list-item-actions";
+import { getListItemAccessories } from "../utils/list-item-accessories";
 
 interface Section {
   title: string;
@@ -52,16 +53,8 @@ export function SubMenuListItems({
             <List.Item
               key={`${app.name}-${subItem.menu}-${subItem.shortcut}`}
               title={subItem.shortcut}
-              accessories={
-                subItem.key !== "NIL" && subItem.modifier
-                  ? [{ text: `${subItem.modifier} ${subItem.key}` }]
-                  : subItem.submenu?.length
-                    ? [{ tag: "Menu" }]
-                    : undefined
-              }
-              actions={
-                <ListItemActions app={app} item={subItem} refresh={refresh} />
-              }
+              accessories={getListItemAccessories(subItem)}
+              actions={<ListItemActions app={app} item={subItem} refresh={refresh} />}
             />
           ))}
         </List.Section>

@@ -20,21 +20,16 @@ async function getMenuBarShortcutsCache(app: Application) {
  * Retrieves shortcuts from AppleScript, parses them and saves to local cache
  */
 export async function getMenuBarShortcutsApplescript(app: Application) {
-  console.log('get menu bar shortcuts applescript')
   try {
     const response = await runAppleScript(getMenuBarItemsApplescript(app), { timeout: 120000 });
-    console.log('response success')
     if (!response?.includes("|MN:")) {
       throw new Error("Invalid shortcuts response");
     }
 
     const parsed = parseAppleScriptResponse(app, response);
-    console.log('parse success')
     await writeFileCache(getFileNameForCache(app), parsed);
-    console.log('write cache success')
     return parsed;
   } catch (e) {
-    console.log('e:', e)
     throw new Error("Could not load shortcuts");
   }
 };
@@ -132,9 +127,14 @@ const getMenuBarItemsApplescript = (app: Application) => {
                       set menuRole to value of attribute "AXRole" of menuItem
                       set menuSubrole to value of attribute "AXSubrole" of menuItem
                       set enabled to value of attribute "AXEnabled" of menuItem
+                      set identifier to ""
+                      try
+                          set identifier to value of attribute "AXIdentifier" of menuItem
+                      end try
                       
                       if menuRole is equal to "AXMenuItemTitle" or ¬
                         menuSubrole is equal to "AXHeaderItem" or ¬
+                        identifier is equal to "" or ¬
                         itemName ends with ":" then
                         set isTitle to true
                       end if
@@ -155,9 +155,14 @@ const getMenuBarItemsApplescript = (app: Application) => {
                               set subMenuRole to value of attribute "AXRole" of subMenuItem
                               set subMenuSubrole to value of attribute "AXSubrole" of subMenuItem
                               set subEnabled to value of attribute "AXEnabled" of subMenuItem
+                              set subIdentifier to ""
+                              try
+                                  set subIdentifier to value of attribute "AXIdentifier" of subMenuItem
+                              end try
                               
                               if subMenuRole is equal to "AXMenuItemTitle" or ¬
                                 subMenuSubrole is equal to "AXHeaderItem" or ¬
+                                subIdentifier is equal to "" or ¬
                                 subItemName ends with ":" then
                                 set isSubTitle to true
                               end if

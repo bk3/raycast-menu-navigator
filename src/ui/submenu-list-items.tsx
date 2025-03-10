@@ -26,6 +26,7 @@ export function SubMenuListItems({
   const submenuSections = useMemo(
     () =>
       item.submenu?.reduce((sections: Section[], subItem) => {
+        console.log({ item })
         if (subItem.isSectionTitle) {
           sections.push({
             title: subItem.shortcut,

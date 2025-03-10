@@ -101,9 +101,19 @@ function extract(text: string, start: string, end?: string): string {
   return end ? value.split(end)[0].trim() : value.trim();
 }
 
+/*
+ * Handle "null" values from applescript
+ */
 function handleNull(val: string): string | null {
   if (val === 'null') return null;
   return val;
+}
+
+function convertToNumber(val: string | null): number | null {
+  if (!val) return null;
+  const num = Number(val)
+  if (isNaN(num)) return null;
+  return num;
 }
 
 /*
@@ -121,9 +131,9 @@ export function parseAppleScriptResponse(app: Application, response: string) {
       path,
       menu,
       shortcut: extract(item, "SN:", ":SM"),
-      modifier: handleNull(extract(item, "SM:", ":SK")),
       key: handleNull(extract(item, "SK:", ":SG")),
-      glyph: handleNull(extract(item, "SG:", ":ST")),
+      modifier: convertToNumber(handleNull(extract(item, "SM:", ":SK"))),
+      glyph: convertToNumber(handleNull(extract(item, "SG:", ":ST"))),
       isSectionTitle: extract(item, "ST:", ":SEC") === "true",
       section: extract(item, ":SEC:"),
     };

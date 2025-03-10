@@ -11,6 +11,7 @@ export default function Command() {
   const dataLoaded = data?.menus && data.menus.length > 0;
   const filterDataLoaded = filteredData?.menus && filteredData.menus.length > 0;
   const loaded = (dataLoaded || filterDataLoaded) && app?.name && !loading;
+  const name = app?.name ? `${app.name} ` : '';
 
   useEffect(() => {
     clearSearchBar();
@@ -20,7 +21,7 @@ export default function Command() {
   return (
     <List
       isLoading={loading}
-      searchBarPlaceholder={`${loading ? 'Loading' : 'Search'} ${app?.name} commands...`}
+      searchBarPlaceholder={`${loading ? 'Loading' : 'Search'} ${name}commands...`}
       searchBarAccessory={
         !loaded ? undefined : (
           <SectionDropdown

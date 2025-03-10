@@ -9,8 +9,8 @@ export function useMenuItemsDataLoader() {
   const [app, setApp] = useState<Application>();
 
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
-  const loadingRef = useRef(true); // Also initialize this as true
   const initialLoadRef = useRef(true); // Track if this is the first load
+  const loadingRef = useRef(true); // Also initialize this as true
 
   function updateLoading(loading: boolean) {
     setLoading(loading);
@@ -29,6 +29,7 @@ export function useMenuItemsDataLoader() {
       // get current focused application
       const frontmostApp = await getFrontmostApplication();
       if (!frontmostApp.name) throw new Error("Could not detect frontmost application");
+      setApp(frontmostApp);
 
       // only reload if user is hard refreshing or the focused app has changed
       if (!refresh && frontmostApp?.name === app?.name && !initialLoadRef.current) {
@@ -36,15 +37,15 @@ export function useMenuItemsDataLoader() {
         return;
       }
 
-      // update app and menu data
-      setApp(frontmostApp);
+      // update menu data
       const getShortcuts = refresh ? getMenuBarShortcutsApplescript : getMenuBarShortcuts;
       const menuData = await getShortcuts(frontmostApp);
       setData(menuData);
 
-      // update initial loading
-      if (!initialLoadRef.current) return;
+      // update loading states
       updateLoading(false)
+      if (!initialLoadRef.current) return;
+      initialLoadRef.current = false;
     } catch (error) {
       await showHUD(String(error));
       updateLoading(false)

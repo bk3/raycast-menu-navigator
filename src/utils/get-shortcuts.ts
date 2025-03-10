@@ -4,6 +4,28 @@ import { parseAppleScriptResponse } from "./parser";
 import { getFileNameForCache, readFileCache, writeFileCache } from "./files-cache";
 
 /*
+ * Get total number of application menu bar items
+ */
+export async function getTotalMenuBarItemsApplescript(app: Application) {
+  const result = await runAppleScript(`
+    tell application "System Events"
+      tell process "${app.name}"
+        set menuCount to count of menu bar items of menu bar 1
+        
+        -- To get total menu items including submenus
+        set totalItems to 0
+        repeat with i from 1 to menuCount
+          set totalItems to totalItems + (count of menu items of menu of menu bar item i of menu bar 1)
+        end repeat
+      end tell
+    end tell
+  `)
+
+  return parseInt(result, 10)
+}
+
+
+/*
  * Load menu bar shortcuts for app from the local cache
  */
 async function getMenuBarShortcutsCache(app: Application) {

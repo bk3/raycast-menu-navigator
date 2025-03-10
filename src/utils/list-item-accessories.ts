@@ -80,9 +80,23 @@ const GLYPH_KEYCODES: Record<number | string, string> = {
 
 // Map special menu items to their SF Symbol icons
 const SPECIAL_ICONS: Record<string, Icon> = {
-  "Start Dictation…": Icon.Microphone,
+  "Start Dictation": Icon.Microphone,
   "Emoji & Symbols": Icon.Globe,
 };
+
+/*
+ * Handle replacing Fn with Globe icon
+ */
+function replaceFnWithGlobe(modifier: string) {
+  const includesFn = modifier && modifier.indexOf('Fn ')
+
+  if (includesFn) return { modifier, icon: null }
+
+  return {
+    modifier: modifier.replace('Fn ', ''),
+    icon: Icon.Globe,
+  };
+}
 
 // Helper function to determine accessories
 export function getListItemAccessories(item: MenuItem) {
@@ -96,8 +110,10 @@ export function getListItemAccessories(item: MenuItem) {
 
   const modifier = item.modifier !== null && MODIFIER_KEYCODES[item.modifier];
   const glyph = item.glyph !== null && GLYPH_KEYCODES[item.glyph];
+
   if (modifier && (glyph || item.key)) {
-    return [{ text: `${modifier} ${glyph || item.key}` }];
+    const modifierData = replaceFnWithGlobe(modifier)
+    return [{ icon: modifierData.icon, text: `${modifierData.modifier} ${glyph || item.key}` }];
   }
 
   return undefined;

@@ -45,8 +45,13 @@ export function SubMenuListItems({
     [item.submenu, item.menu],
   );
 
+  const name = app?.name ? `${app.name} > ${item.menu}` : '';
+
   return (
-    <List navigationTitle={item.shortcut}>
+    <List
+      navigationTitle={item.shortcut}
+      searchBarPlaceholder={`Search ${name} commands...`}
+    >
       {submenuSections?.map((section) => (
         <List.Section key={section.title} title={section.title}>
           {section.items.map((subItem) => (

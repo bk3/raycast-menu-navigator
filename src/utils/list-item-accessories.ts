@@ -88,12 +88,11 @@ const SPECIAL_ICONS: Record<string, Icon> = {
  * Handle replacing Fn with Globe icon
  */
 function replaceFnWithGlobe(modifier: string) {
-  const includesFn = modifier && modifier.indexOf('Fn ')
-
-  if (includesFn) return { modifier, icon: null }
+  const includesFn = modifier && /Fn\s?/.test(modifier);
+  if (!includesFn) return { modifier, icon: null }
 
   return {
-    modifier: modifier.replace('Fn ', ''),
+    modifier: modifier.replace(/Fn\s?/g, '').trim(),
     icon: Icon.Globe,
   };
 }

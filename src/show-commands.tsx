@@ -1,9 +1,9 @@
 import { List, Color, clearSearchBar } from "@raycast/api";
 import { useEffect } from "react";
 import { useLoadingMessageQueue, useMenuItemsDataLoader, useMenuItemFilters } from "./hooks";
-import { ListItems, SectionDropdown } from "./ui";
+import { ListItems, SectionDropdown, ErrorBoundary } from "./ui";
 
-export default function Command() {
+function MenuNavigator() {
   const { loading, app, data, refreshMenuItemsData } = useMenuItemsDataLoader();
   const { loadingMessage, loadingState } = useLoadingMessageQueue(loading, app);
   const { options, filter, setFilter, filteredData } = useMenuItemFilters(data);
@@ -58,5 +58,13 @@ export default function Command() {
         />
       )}
     </List>
+  );
+}
+
+export default function Command() {
+  return (
+    <ErrorBoundary>
+      <MenuNavigator />
+    </ErrorBoundary>
   );
 }

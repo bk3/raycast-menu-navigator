@@ -10,7 +10,7 @@ const messages = [
 ];
 
 export function useLoadingMessageQueue(loading: boolean, app?: Application) {
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState('Loading...');
   const [loadingState, setLoadingState] = useState('Please wait');
   const messageIndex = useRef(0);
 
@@ -20,7 +20,7 @@ export function useLoadingMessageQueue(loading: boolean, app?: Application) {
     setLoadingMessage(`Initial setup may take a few minutes to complete...`);
 
     return () => {
-      setLoadingMessage('');
+      setLoadingMessage('Loading...');
       setLoadingState('Please wait');
       messageIndex.current = 0;
     };

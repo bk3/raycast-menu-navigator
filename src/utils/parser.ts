@@ -107,14 +107,27 @@ function buildMenuGroups(itemsByPath: Map<string, MenuItem>): MenuGroup[] {
   return Array.from(topLevelMenus.values());
 }
 
-/**
+/*
+ * Normalizes text by removing all forms of ellipsis
+ */
+function normalize(text: string | undefined | null): string {
+  if (!text) return '';
+
+  // Handle both Unicode ellipsis (…) and three dots (...) and any variations
+  return text.replace(/…|\.{3,}/g, '').trim();
+}
+
+/*
  * Checks if an item would be a duplicate in the given array
  */
 function isDuplicate(items: MenuItem[], item: MenuItem): boolean {
   return items.some(existing =>
-    existing.shortcut === item.shortcut &&
-    existing.modifier === item.modifier &&
-    existing.key === item.key
+    normalize(existing.shortcut) === normalize(item.shortcut) ||
+    (
+      existing.shortcut === item.shortcut &&
+      existing.modifier === item.modifier &&
+      existing.key === item.key
+    )
   );
 }
 

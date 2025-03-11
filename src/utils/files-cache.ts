@@ -23,7 +23,7 @@ export async function readFileCache(filename: string): Promise<MenusConfig> {
   } catch (e) {
     throw new Error(`Could not parse local config file ${filename}.json`);
   }
-};
+}
 
 /*
  * Create cached shortcuts file
@@ -42,5 +42,4 @@ export async function writeFileCache(
   } catch (e) {
     throw new Error(`Could not create local config file ${filename}.json`);
   }
-};
-
+}

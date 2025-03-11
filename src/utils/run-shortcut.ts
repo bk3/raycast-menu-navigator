@@ -1,5 +1,6 @@
 import { runAppleScript } from "@raycast/utils";
 import { MenuItem } from "../types";
+import { showHUD } from "@raycast/api";
 
 /*
  * Script to run top level menu item shortcut
@@ -21,7 +22,7 @@ function menuItemScript(appName: string, item: MenuItem) {
         end tell
       end tell
     end tell
-  `
+  `;
 }
 
 /*
@@ -66,7 +67,7 @@ function subMenuItemScript(appName: string, item: MenuItem) {
             end tell
         end tell
     end tell
-  `
+  `;
 }
 
 /*
@@ -74,11 +75,11 @@ function subMenuItemScript(appName: string, item: MenuItem) {
  */
 export async function runShortcut(appName: string, item: MenuItem) {
   try {
-    const isSubmenu = item.path?.split('>').length > 2
-    const script = isSubmenu ? menuItemScript : subMenuItemScript;
-    const response = await runAppleScript(script(appName, item));
+    const isSubmenu = item.path?.split(">").length > 2;
+    const runItem = isSubmenu ? subMenuItemScript : menuItemScript;
+    const response = await runAppleScript(runItem(appName, item));
     return response;
   } catch (e) {
-    throw new Error("Could not run shortcut");
+    showHUD("Error running shortcut");
   }
 }

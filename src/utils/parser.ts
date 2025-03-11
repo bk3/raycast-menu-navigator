@@ -17,7 +17,9 @@ function groupMenuBarItems(items: ParsedMenuItem[]): MenuGroup[] {
 /**
  * Creates a complete hierarchy of menu items from the parsed items
  */
-function createMenuItemHierarchy(items: ParsedMenuItem[]): Map<string, MenuItem> {
+function createMenuItemHierarchy(
+  items: ParsedMenuItem[],
+): Map<string, MenuItem> {
   const itemsByPath = new Map<string, MenuItem>();
 
   // First pass: Create all menu items
@@ -39,7 +41,10 @@ function createMenuItemHierarchy(items: ParsedMenuItem[]): Map<string, MenuItem>
 /**
  * Ensures all parent paths for a given path exist in the map
  */
-function ensureParentPathsExist(path: string, itemsByPath: Map<string, MenuItem>): void {
+function ensureParentPathsExist(
+  path: string,
+  itemsByPath: Map<string, MenuItem>,
+): void {
   const pathParts = path.split(">");
 
   // Create any missing parent paths
@@ -58,7 +63,7 @@ function ensureParentPathsExist(path: string, itemsByPath: Map<string, MenuItem>
       modifier: null,
       key: null,
       glyph: null,
-      submenu: []
+      submenu: [],
     });
   }
 }
@@ -70,8 +75,9 @@ function buildMenuGroups(itemsByPath: Map<string, MenuItem>): MenuGroup[] {
   const topLevelMenus = new Map<string, MenuGroup>();
 
   // Process items in order of path length (parents before children)
-  const sortedItems = Array.from(itemsByPath.values())
-    .sort((a, b) => a.path.split(">").length - b.path.split(">").length);
+  const sortedItems = Array.from(itemsByPath.values()).sort(
+    (a, b) => a.path.split(">").length - b.path.split(">").length,
+  );
 
   for (const item of sortedItems) {
     const pathParts = item.path.split(">");
@@ -107,14 +113,22 @@ function buildMenuGroups(itemsByPath: Map<string, MenuItem>): MenuGroup[] {
   return Array.from(topLevelMenus.values());
 }
 
-/**
+/*
+ * Normalizes text by removing all forms of ellipsis
+ */
+function normalize(text: string | undefined | null): string {
+  if (!text) return "";
+
+  // Handle both Unicode ellipsis (…) and three dots (...) and any variations
+  return text.replace(/…|\.{3,}/g, "").trim();
+}
+
+/*
  * Checks if an item would be a duplicate in the given array
  */
 function isDuplicate(items: MenuItem[], item: MenuItem): boolean {
-  return items.some(existing =>
-    existing.shortcut === item.shortcut &&
-    existing.modifier === item.modifier &&
-    existing.key === item.key
+  return items.some(
+    (existing) => normalize(existing.shortcut) === normalize(item.shortcut),
   );
 }
 
@@ -123,14 +137,14 @@ function isDuplicate(items: MenuItem[], item: MenuItem): boolean {
  */
 function extract(text: string, start: string, end?: string): string {
   const [, value] = text.split(start);
-  return end ? value.split(end)[0].trim().replace('…', '') : value.trim().replace('…', '');
+  return end ? value.split(end)[0].trim() : value.trim();
 }
 
 /*
  * Handle "null" values from applescript
  */
 function handleNull(val: string): string | null {
-  if (val === 'null') return null;
+  if (val === "null") return null;
   return val;
 }
 
@@ -139,7 +153,7 @@ function handleNull(val: string): string | null {
  */
 function convertToNumber(val: string | null): number | null {
   if (!val) return null;
-  const num = Number(val)
+  const num = Number(val);
   if (isNaN(num)) return null;
   return num;
 }

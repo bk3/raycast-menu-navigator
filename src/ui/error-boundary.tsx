@@ -28,7 +28,9 @@ export class ErrorBoundary extends React.Component<Props, State> {
         <List.EmptyView
           icon="⚠️"
           title="Something went wrong"
-          description={this.state.error?.message || "An unexpected error occurred"}
+          description={
+            this.state.error?.message || "An unexpected error occurred"
+          }
         />
       </List>
     );

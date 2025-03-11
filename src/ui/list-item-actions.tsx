@@ -32,7 +32,7 @@ export function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
           title="Run Command"
           onAction={async () => {
             await closeMainWindow();
-            await runShortcut(app.name, item)
+            await runShortcut(app.name, item);
           }}
         />
       )}
@@ -44,4 +44,3 @@ export function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
     </ActionPanel>
   );
 }
-

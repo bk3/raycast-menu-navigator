@@ -45,7 +45,7 @@ export function SubMenuListItems({
     [item.submenu, item.menu],
   );
 
-  const name = app?.name ? `${app.name} > ${item.menu}` : '';
+  const name = app?.name ? `${app.name} > ${item.menu}` : "";
 
   return (
     <List
@@ -59,7 +59,9 @@ export function SubMenuListItems({
               key={`${app.name}-${subItem.menu}-${subItem.shortcut}`}
               title={subItem.shortcut}
               accessories={getListItemAccessories(subItem)}
-              actions={<ListItemActions app={app} item={subItem} refresh={refresh} />}
+              actions={
+                <ListItemActions app={app} item={subItem} refresh={refresh} />
+              }
             />
           ))}
         </List.Section>

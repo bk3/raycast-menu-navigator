@@ -1,9 +1,11 @@
-import { Application } from "@raycast/api";
 import { runAppleScript } from "@raycast/utils";
 import { MenuItem } from "../types";
 
-export async function runShortcut(appName: Application["name"], item: MenuItem) {
-  const menuAction = `
+/*
+ * Script to run top level menu item shortcut
+ */
+function menuItemScript(appName: string, item: MenuItem) {
+  return `
     tell application "${appName}"
         activate
     end tell
@@ -20,8 +22,13 @@ export async function runShortcut(appName: Application["name"], item: MenuItem) 
       end tell
     end tell
   `
+}
 
-  const subMenuAction = `
+/*
+ * Script to run submenu item shortcuts
+ */
+function subMenuItemScript(appName: string, item: MenuItem) {
+  return `
     -- Helper function to split text by delimiter
     on splitText(theText, theDelimiter)
         set AppleScript's text item delimiters to theDelimiter
@@ -60,11 +67,16 @@ export async function runShortcut(appName: Application["name"], item: MenuItem) 
         end tell
     end tell
   `
+}
 
+/*
+ * Runs Applescript function to trigger shortcut based on item data provided
+ */
+export async function runShortcut(appName: string, item: MenuItem) {
   try {
     const isSubmenu = item.path?.split('>').length > 2
-    const script = isSubmenu ? subMenuAction : menuAction;
-    const response = await runAppleScript(script);
+    const script = isSubmenu ? menuItemScript : subMenuItemScript;
+    const response = await runAppleScript(script(appName, item));
     return response;
   } catch (e) {
     throw new Error("Could not run shortcut");

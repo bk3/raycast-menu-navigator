@@ -3,8 +3,9 @@ import { Application } from "@raycast/api";
 export interface MenuItem {
   menu: string;
   shortcut: string;
-  modifier: string;
-  key: string;
+  modifier: number | null;
+  key: string | null;
+  glyph: number | null;
   path: string;
   section?: string;
   isSectionTitle?: boolean;

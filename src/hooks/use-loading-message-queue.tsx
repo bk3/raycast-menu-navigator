@@ -1,39 +1,50 @@
 import { Application } from "@raycast/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+const messages = [
+  'Loading',
+  'Processing',
+  'Getting close',
+  'Almost there',
+  'Very close',
+];
 
 export function useLoadingMessageQueue(loading: boolean, app?: Application) {
-  const [loadingMessage, setLoadingMessage] = useState("");
-  const [loadingState, setLoadingState] = useState("Please wait");
+  const [loadingMessage, setLoadingMessage] = useState('Loading...');
+  const [loadingState, setLoadingState] = useState('Please wait');
+  const messageIndex = useRef(0);
 
-  const messages = [`Loading`, `Processing`, `Getting close`, `Almost there`];
-
-  // Set initial loading message when app.name becomes available
+  // Set initial loading message once an app is defined
   useEffect(() => {
     if (!app?.name) return;
-    setLoadingMessage(`Loading ${app.name} menu items...`);
+    setLoadingMessage(`Initial setup may take a few minutes to complete...`);
 
     return () => {
-      setLoadingMessage("");
-      setLoadingState("Please wait");
+      setLoadingMessage('Loading...');
+      setLoadingState('Please wait');
+      messageIndex.current = 0;
     };
   }, [app?.name]);
 
-  // Handle loading message progression
+  // Update loading message every 10 seconds
   useEffect(() => {
-    if (!app?.name || !loading) return;
+    if (!app?.name) return;
 
-    const timeoutId = setTimeout(() => {
-      const currentIndex = messages.indexOf(loadingState);
-      if (currentIndex < messages.length - 1) {
-        const nextIndex = currentIndex + 1;
-        setLoadingState(messages[nextIndex]);
-      }
-    }, 8000);
+    if (loading) {
+      const timeoutId = setTimeout(() => {
+        messageIndex.current = (messageIndex.current + 1) % messages.length;
+        setLoadingState(messages[messageIndex.current]);
+      }, 10000);
 
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [loadingMessage, loading, messages, app?.name]);
+      return () => {
+        clearTimeout(timeoutId);
+      };
+    } else {
+      setLoadingState("Please wait");
+      messageIndex.current = 0;
+    }
+  }, [loading, app?.name, messageIndex.current]);
 
   return { loadingMessage, loadingState };
 }
+

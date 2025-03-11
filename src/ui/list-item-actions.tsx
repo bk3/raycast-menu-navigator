@@ -31,7 +31,6 @@ export function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
         <Action
           title="Run Command"
           onAction={async () => {
-            if (!app?.name) return;
             await closeMainWindow();
             await runShortcut(app.name, item)
           }}
@@ -40,10 +39,7 @@ export function ListItemActions({ app, item, refresh }: ListItemActionsProps) {
       <Action
         title="Refresh Commands"
         shortcut={{ modifiers: ["ctrl", "cmd"], key: "enter" }}
-        onAction={async () => {
-          if (!app.name) return;
-          await refresh();
-        }}
+        onAction={refresh}
       />
     </ActionPanel>
   );

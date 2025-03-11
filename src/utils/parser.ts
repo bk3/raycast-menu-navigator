@@ -121,14 +121,7 @@ function normalize(text: string | undefined | null): string {
  * Checks if an item would be a duplicate in the given array
  */
 function isDuplicate(items: MenuItem[], item: MenuItem): boolean {
-  return items.some(existing =>
-    normalize(existing.shortcut) === normalize(item.shortcut) ||
-    (
-      existing.shortcut === item.shortcut &&
-      existing.modifier === item.modifier &&
-      existing.key === item.key
-    )
-  );
+  return items.some(existing => normalize(existing.shortcut) === normalize(item.shortcut));
 }
 
 /*
@@ -136,7 +129,7 @@ function isDuplicate(items: MenuItem[], item: MenuItem): boolean {
  */
 function extract(text: string, start: string, end?: string): string {
   const [, value] = text.split(start);
-  return end ? value.split(end)[0].trim().replace('…', '') : value.trim().replace('…', '');
+  return end ? value.split(end)[0].trim() : value.trim();
 }
 
 /*

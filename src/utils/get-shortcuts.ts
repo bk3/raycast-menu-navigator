@@ -28,7 +28,7 @@ export async function getTotalMenuBarItemsApplescript(app: Application) {
 /*
  * Load menu bar shortcuts for app from the local cache
  */
-async function getMenuBarShortcutsCache(app: Application) {
+export async function getMenuBarShortcutsCache(app: Application) {
   try {
     const data = await readFileCache(getFileNameForCache(app));
     return data;
@@ -58,23 +58,6 @@ export async function getMenuBarShortcutsApplescript(app: Application, totalMenu
   } catch (e) {
     throw new Error("Could not load shortcuts");
   }
-};
-
-/*
- * Load application menu bar shortcuts
- * Attempts to load from cache and falls back to using AppleScript if it doesn't exist
- */
-export async function getMenuBarShortcuts(app: Application, totalMenuItems: number = 0) {
-  try {
-    const cached = await getMenuBarShortcutsCache(app);
-    if (!!cached?.menus?.length) return cached;
-  } catch {
-    // Fall through to fetch fresh data
-  }
-
-  const data = await getMenuBarShortcutsApplescript(app, totalMenuItems);
-  if (!data?.menus?.length) throw new Error("Shortcuts not found");
-  return data;
 };
 
 /*

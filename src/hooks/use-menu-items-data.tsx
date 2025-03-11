@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Application, getFrontmostApplication, showHUD } from "@raycast/api";
 import { MenusConfig } from "../types";
-import { getMenuBarShortcuts, getMenuBarShortcutsApplescript } from "../utils";
+import { getMenuBarShortcuts, getMenuBarShortcutsApplescript, getTotalMenuBarItemsApplescript } from "../utils";
 
 export function useMenuItemsDataLoader() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<MenusConfig>();
   const [app, setApp] = useState<Application>();
+  const [totalMenuItems, setTotalMenuItems] = useState<number>(0);
 
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const initialLoadRef = useRef(true); // Track if this is the first load
@@ -33,6 +34,11 @@ export function useMenuItemsDataLoader() {
       if (!frontmostApp.name) throw new Error("Could not detect frontmost application");
       setApp(frontmostApp);
 
+      // Reset total menu items when app changes
+      if (frontmostApp?.name !== app?.name) {
+        setTotalMenuItems(0);
+      }
+
       // only reload if user is hard refreshing or the focused app has changed
       if (!refresh && frontmostApp?.name === app?.name && !initialLoadRef.current) {
         setLoading(false);
@@ -41,10 +47,20 @@ export function useMenuItemsDataLoader() {
 
       if (signal.aborted) return;
 
+      // Get total menu items count first for loading estimate
+      const totalItems = await getTotalMenuBarItemsApplescript(frontmostApp);
+      setTotalMenuItems(totalItems);
+
       // update menu data
-      const getShortcuts = refresh ? getMenuBarShortcutsApplescript : getMenuBarShortcuts;
-      const menuData = await getShortcuts(frontmostApp);
-      setData(menuData);
+      if (refresh) {
+        // When refreshing, always use AppleScript with the known total items count
+        const menuData = await getMenuBarShortcutsApplescript(frontmostApp, totalItems);
+        setData(menuData);
+      } else {
+        // For initial load, try cache first
+        const menuData = await getMenuBarShortcuts(frontmostApp, totalItems);
+        setData(menuData);
+      }
 
       // update loading states
       setLoading(false);
@@ -55,6 +71,7 @@ export function useMenuItemsDataLoader() {
       if (signal.aborted) return;
       await showHUD(String(error));
       setLoading(false);
+      setTotalMenuItems(0);
     }
   }, [app, loading]);
 
@@ -101,5 +118,6 @@ export function useMenuItemsDataLoader() {
     data,
     loaded: Boolean(data?.menus?.length && app?.name && !loading),
     refreshMenuItemsData: () => loadingHandler(true),
-  }), [loading, app?.name, data]);
+    totalMenuItems,
+  }), [loading, app?.name, data, totalMenuItems]);
 }

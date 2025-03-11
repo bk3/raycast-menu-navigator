@@ -41,12 +41,14 @@ async function getMenuBarShortcutsCache(app: Application) {
  * Load menu bar shortcuts for app using AppleScript
  * Retrieves shortcuts from AppleScript, parses them and saves to local cache
  */
-export async function getMenuBarShortcutsApplescript(app: Application) {
+export async function getMenuBarShortcutsApplescript(app: Application, totalMenuItems: number = 0) {
   try {
+    // Calculate timeout based on total menu items (1 second per item)
+    // Minimum timeout of 30 seconds, maximum of 10 minutes
+    const timeout = Math.min(Math.max(totalMenuItems * 1000, 30000), 600000);
+    
     const response = await runAppleScript(getMenuBarItemsApplescript(app), {
-      // allow 1 second per menu item to account for apps with extensive options
-      // fallback to 2 minutes otherwise
-      timeout: 120000
+      timeout
     });
     if (!response?.includes("|MN:")) {
       throw new Error("Invalid shortcuts response");
@@ -64,7 +66,7 @@ export async function getMenuBarShortcutsApplescript(app: Application) {
  * Load application menu bar shortcuts
  * Attempts to load from cache and falls back to using AppleScript if it doesn't exist
  */
-export async function getMenuBarShortcuts(app: Application) {
+export async function getMenuBarShortcuts(app: Application, totalMenuItems: number = 0) {
   try {
     const cached = await getMenuBarShortcutsCache(app);
     if (!!cached?.menus?.length) return cached;
@@ -72,7 +74,7 @@ export async function getMenuBarShortcuts(app: Application) {
     // Fall through to fetch fresh data
   }
 
-  const data = await getMenuBarShortcutsApplescript(app);
+  const data = await getMenuBarShortcutsApplescript(app, totalMenuItems);
   if (!data?.menus?.length) throw new Error("Shortcuts not found");
   return data;
 };

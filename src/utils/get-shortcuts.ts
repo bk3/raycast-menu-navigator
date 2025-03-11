@@ -43,7 +43,11 @@ async function getMenuBarShortcutsCache(app: Application) {
  */
 export async function getMenuBarShortcutsApplescript(app: Application) {
   try {
-    const response = await runAppleScript(getMenuBarItemsApplescript(app), { timeout: 120000 });
+    const response = await runAppleScript(getMenuBarItemsApplescript(app), {
+      // allow 1 second per menu item to account for apps with extensive options
+      // fallback to 2 minutes otherwise
+      timeout: 120000
+    });
     if (!response?.includes("|MN:")) {
       throw new Error("Invalid shortcuts response");
     }

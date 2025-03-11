@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Application, getFrontmostApplication, showHUD } from "@raycast/api";
 import { MenusConfig } from "../types";
 import { getMenuBarShortcuts, getMenuBarShortcutsApplescript } from "../utils";
@@ -10,21 +10,23 @@ export function useMenuItemsDataLoader() {
 
   const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const initialLoadRef = useRef(true); // Track if this is the first load
-  const loadingRef = useRef(true); // Also initialize this as true
-
-  function updateLoading(loading: boolean) {
-    setLoading(loading);
-    loadingRef.current = loading;
-  }
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   /*
    * Manage loading of menu item data
    */
-  async function loadingHandler(refresh?: boolean) {
-    if (loadingRef.current && !initialLoadRef.current) return;
+  const loadingHandler = useCallback(async (refresh?: boolean) => {
+    if (loading && !initialLoadRef.current) return;
+
+    // Cancel any pending operations
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+
+    // Create new abort controller for this operation
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
 
     try {
-      updateLoading(true)
+      setLoading(true);
 
       // get current focused application
       const frontmostApp = await getFrontmostApplication();
@@ -33,9 +35,11 @@ export function useMenuItemsDataLoader() {
 
       // only reload if user is hard refreshing or the focused app has changed
       if (!refresh && frontmostApp?.name === app?.name && !initialLoadRef.current) {
-        updateLoading(false)
+        setLoading(false);
         return;
       }
+
+      if (signal.aborted) return;
 
       // update menu data
       const getShortcuts = refresh ? getMenuBarShortcutsApplescript : getMenuBarShortcuts;
@@ -43,14 +47,16 @@ export function useMenuItemsDataLoader() {
       setData(menuData);
 
       // update loading states
-      updateLoading(false)
+      setLoading(false);
       if (!initialLoadRef.current) return;
       initialLoadRef.current = false;
     } catch (error) {
+      // Only show error if not aborted
+      if (signal.aborted) return;
       await showHUD(String(error));
-      updateLoading(false)
+      setLoading(false);
     }
-  }
+  }, [app, loading]);
 
   /*
    * Load initial data
@@ -59,8 +65,8 @@ export function useMenuItemsDataLoader() {
     loadingHandler();
 
     return () => {
-      if (!intervalRef.current) return;
-      clearInterval(intervalRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
 
@@ -84,8 +90,8 @@ export function useMenuItemsDataLoader() {
     intervalRef.current = setInterval(checkFocusedApplication, 1000);
 
     return () => {
-      if (!intervalRef.current) return;
-      clearInterval(intervalRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, [app?.name]);
 

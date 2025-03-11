@@ -4,8 +4,8 @@ import { useLoadingMessageQueue, useMenuItemsDataLoader, useMenuItemFilters } fr
 import { ListItems, SectionDropdown, ErrorBoundary } from "./ui";
 
 function MenuNavigator() {
-  const { loading, app, data, refreshMenuItemsData, totalMenuItems } = useMenuItemsDataLoader();
-  const { loadingMessage, loadingState } = useLoadingMessageQueue({ loading, app, totalMenuItems });
+  const { loading, app, data, totalMenuItems, refreshMenuItemsData } = useMenuItemsDataLoader();
+  const { loadingMessage, loadingState } = useLoadingMessageQueue({ app, totalMenuItems });
   const { options, filter, setFilter, filteredData } = useMenuItemFilters(data);
 
   const dataLoaded = data?.menus && data.menus.length > 0;
@@ -32,7 +32,7 @@ function MenuNavigator() {
         )
       }
     >
-      {loading ? (
+      {loading && loadingMessage ? (
         <List.Item
           title={loadingMessage}
           accessories={

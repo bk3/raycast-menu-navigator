@@ -52,15 +52,9 @@ export function useMenuItemsDataLoader() {
       setTotalMenuItems(totalItems);
 
       // update menu data
-      if (refresh) {
-        // When refreshing, always use AppleScript with the known total items count
-        const menuData = await getMenuBarShortcutsApplescript(frontmostApp, totalItems);
-        setData(menuData);
-      } else {
-        // For initial load, try cache first
-        const menuData = await getMenuBarShortcuts(frontmostApp, totalItems);
-        setData(menuData);
-      }
+      const getShortcuts = refresh ? getMenuBarShortcutsApplescript : getMenuBarShortcuts;
+      const menuData = await getShortcuts(frontmostApp, totalItems);
+      setData(menuData);
 
       // update loading states
       setLoading(false);
@@ -116,8 +110,8 @@ export function useMenuItemsDataLoader() {
     loading,
     app,
     data,
+    totalMenuItems,
     loaded: Boolean(data?.menus?.length && app?.name && !loading),
     refreshMenuItemsData: () => loadingHandler(true),
-    totalMenuItems,
   }), [loading, app?.name, data, totalMenuItems]);
 }

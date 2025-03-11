@@ -44,12 +44,10 @@ async function getMenuBarShortcutsCache(app: Application) {
 export async function getMenuBarShortcutsApplescript(app: Application, totalMenuItems: number = 0) {
   try {
     // Calculate timeout based on total menu items (1 second per item)
-    // Minimum timeout of 30 seconds, maximum of 10 minutes
-    const timeout = Math.min(Math.max(totalMenuItems * 1000, 30000), 600000);
-    
-    const response = await runAppleScript(getMenuBarItemsApplescript(app), {
-      timeout
-    });
+    // Minimum timeout of 1 minute, maximum of 10 minutes
+    const timeout = Math.min(Math.max(totalMenuItems * 1000, 60000), 600000);
+
+    const response = await runAppleScript(getMenuBarItemsApplescript(app), { timeout });
     if (!response?.includes("|MN:")) {
       throw new Error("Invalid shortcuts response");
     }
